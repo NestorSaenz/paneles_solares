@@ -6,6 +6,7 @@ import numpy as np
 from geopy.distance import geodesic
 import datetime
 
+folium.Figure().add_to(folium.Map())
 
 # Configuración de página (DEBE SER EL PRIMER COMANDO)
 st.set_page_config(
