@@ -5,6 +5,7 @@ pandas==2.1.4  # Versión más reciente compatible
 numpy==1.26.0  # Versión que soporta Python 3.12
 geopy==2.3.0
 streamlit-folium==0.15.1
+branca==0.7.0
 
 # Dependencias geoespaciales
 shapely==2.0.2
