@@ -1,6 +1,15 @@
+# Paquetes principales con versiones compatibles con Python 3.12
 streamlit==1.28.0
 folium==0.14.0
-pandas==2.0.3
-numpy==1.24.3
+pandas==2.1.4  # Versión más reciente compatible
+numpy==1.26.0  # Versión que soporta Python 3.12
 geopy==2.3.0
 streamlit-folium==0.15.1
+
+# Dependencias geoespaciales
+shapely==2.0.2
+pyproj==3.6.1
+
+# Visualización
+matplotlib==3.8.2
+plotly==5.18.0
