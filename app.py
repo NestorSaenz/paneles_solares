@@ -1,270 +1,3 @@
-# import streamlit as st
-# import folium
-# from streamlit_folium import st_folium
-# import pandas as pd
-# import numpy as np
-
-# # Configuración de página
-# st.set_page_config(
-#     page_title="Análisis Solar Completo",
-#     page_icon="☀️",
-#     layout="wide"
-# )
-
-# # CSS personalizado
-# st.markdown("""
-# <style>
-#     .card {
-#         padding: 20px;
-#         border-radius: 10px;
-#         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-#         margin-bottom: 20px;
-#     }
-#     .map-container {
-#         border: 2px solid #e0e0e0;
-#         border-radius: 10px;
-#         margin: 20px 0;
-#     }
-#     .metric-box {
-#         background-color: #f8f9fa;
-#         padding: 15px;
-#         border-radius: 8px;
-#         margin: 10px 0;
-#     }
-#     .stTabs [data-baseweb="tab-list"] {
-#         gap: 10px;
-#     }
-#     .stTabs [data-baseweb="tab"] {
-#         height: 50px;
-#         padding: 0 20px;
-#         background-color: #f0f2f6;
-#         border-radius: 8px 8px 0 0;
-#         font-weight: 600;
-#     }
-#     .stTabs [aria-selected="true"] {
-#         background-color: #ffffff;
-#     }
-#     .folium-map {
-#         border-radius: 10px;
-#         border: 2px solid #e0e0e0;
-#         margin: 1rem 0;
-#     }
-# </style>
-# """, unsafe_allow_html=True)
-
-# # Funciones comunes
-# def crear_mapa_principal(lat, lon, radio_km):
-#     """Crea el mapa para la pestaña de factibilidad"""
-#     m = folium.Map(location=[lat, lon], zoom_start=13)
-    
-#     # Capa satelital
-#     folium.TileLayer(
-#         tiles='https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-#         attr='Google Satellite',
-#         name='Vista Satelital',
-#         overlay=True
-#     ).add_to(m)
-    
-#     # Marcador principal
-#     folium.Marker(
-#         [lat, lon],
-#         popup=f"Ubicación analizada<br>Lat: {lat:.4f}<br>Lon: {lon:.4f}",
-#         tooltip="Ver detalles",
-#         icon=folium.Icon(color='red', icon='sun', prefix='fa')
-#     ).add_to(m)
-    
-#     # Área de análisis
-#     folium.Circle(
-#         location=[lat, lon],
-#         radius=radio_km*1000,
-#         color='#4285F4',
-#         fill=True,
-#         fill_color='#4285F4',
-#         fill_opacity=0.2,
-#         popup=f"Área de análisis: {radio_km} km"
-#     ).add_to(m)
-    
-#     folium.LayerControl().add_to(m)
-#     return m
-
-# def generar_datos_vecinos(lat, lon, radio_km=5, n_puntos=20):
-#     """Genera datos simulados de vecinos para la pestaña de vecinos"""
-#     np.random.seed(42)
-#     puntos = []
-    
-#     for _ in range(n_puntos):
-#         ang = np.random.uniform(0, 2*np.pi)
-#         dist = np.random.uniform(0.2, radio_km)
-        
-#         new_lat = lat + (dist/111.32) * np.cos(ang)
-#         new_lon = lon + (dist/(111.32 * np.cos(np.radians(lat)))) * np.sin(ang)
-        
-#         radiacion = 700 + np.random.normal(0, 100)
-#         radiacion = max(300, min(radiacion, 1200))
-        
-#         puntos.append({
-#             'Latitud': new_lat,
-#             'Longitud': new_lon,
-#             'Radiacion_Wm2': radiacion,
-#             'Factible': radiacion > 650
-#         })
-    
-#     return pd.DataFrame(puntos)
-
-# def crear_mapa_vecinos(lat, lon, df_vecinos, radio_km):
-#     """Crea el mapa para la pestaña de vecinos"""
-#     m = folium.Map(location=[lat, lon], zoom_start=13)
-    
-#     # Capa base satelital
-#     folium.TileLayer(
-#         tiles='https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-#         attr='Google Satellite',
-#         name='Vista Satelital',
-#         overlay=False
-#     ).add_to(m)
-    
-#     # Área de búsqueda
-#     folium.Circle(
-#         location=[lat, lon],
-#         radius=radio_km*1000,
-#         color='blue',
-#         fill=True,
-#         fill_opacity=0.1,
-#         fill_color='blue',
-#         popup=f'Área de búsqueda: {radio_km} km'
-#     ).add_to(m)
-    
-#     # Punto central
-#     folium.Marker(
-#         [lat, lon],
-#         popup='Ubicación central',
-#         icon=folium.Icon(color='red', icon='home')
-#     ).add_to(m)
-    
-#     # Puntos factibles
-#     for _, row in df_vecinos[df_vecinos['Factible']].iterrows():
-#         folium.Marker(
-#             [row['Latitud'], row['Longitud']],
-#             popup=f"Radiación: {row['Radiacion_Wm2']:.1f} W/m²",
-#             icon=folium.Icon(color='green', icon='sun', prefix='fa')
-#         ).add_to(m)
-    
-#     folium.LayerControl().add_to(m)
-#     return m
-
-# # Sidebar común
-# with st.sidebar:
-#     st.header("🔍 Parámetros de Análisis")
-#     lat = st.number_input("Latitud", value=4.711, format="%.4f")
-#     lon = st.number_input("Longitud", value=-74.072, format="%.4f")
-#     radio = st.slider("Radio de análisis (km)", 0.1, 10.0, 2.0)
-    
-#     if st.button("Analizar Ubicación", type="primary"):
-#         st.session_state.analizado = True
-    
-#     st.markdown("""
-#     ---
-#     **ℹ️ Instrucciones:**
-#     1. Ingrese coordenadas
-#     2. Ajuste el radio
-#     3. Haga clic en Analizar
-#     """)
-
-# # Título principal
-# st.title("🌞 Análisis de Factibilidad Solar Completo")
-
-# # Pestañas
-# tab1, tab2 = st.tabs(["📊 Factibilidad Solar", "🏘️ Vecinos Factibles"])
-
-# with tab1:
-#     # Contenido de la pestaña de factibilidad
-#     if st.session_state.get('analizado'):
-#         st.subheader(f"📍 Ubicación seleccionada: {lat:.4f}, {lon:.4f}")
-        
-#         with st.container():
-#             st.success("✅ Datos obtenidos exitosamente!")
-            
-#             # Métricas en columnas
-#             col1, col2, col3 = st.columns(3)
-#             with col1:
-#                 st.markdown('<div class="metric-box">', unsafe_allow_html=True)
-#                 st.metric("Radiación Solar", "750.2 W/m²")
-#                 st.markdown('</div>', unsafe_allow_html=True)
-            
-#             with col2:
-#                 st.markdown('<div class="metric-box">', unsafe_allow_html=True)
-#                 st.metric("Temperatura", "25.3 °C")
-#                 st.markdown('</div>', unsafe_allow_html=True)
-            
-#             with col3:
-#                 st.markdown('<div class="metric-box">', unsafe_allow_html=True)
-#                 st.metric("Humedad Relativa", "65%")
-#                 st.markdown('</div>', unsafe_allow_html=True)
-
-#         # Resultado de factibilidad
-#         with st.container():
-#             st.subheader("📊 Resultado de Factibilidad")
-#             st.success("✅ **FACTIBLE** - Ubicación adecuada para paneles solares")
-            
-#             st.markdown("""
-#             **Recomendaciones:**
-#             - Alta radiación solar detectada
-#             - Condiciones climáticas óptimas
-#             - Potencial de generación estimado: 4-6 kWh/m²/día
-#             - Inclinación recomendada: 15-20°
-#             """)
-
-#         # Mapa
-#         st.subheader("🗺️ Visualización Geográfica")
-#         with st.spinner("Generando mapa satelital..."):
-#             mapa = crear_mapa_principal(lat, lon, radio)
-#             st_folium(
-#                 fig=mapa,
-#                 width=1000,
-#                 height=500,
-#                 returned_objects=[]
-#             )
-        
-#         # Atribución
-#         st.caption("Mapa base © Google Maps | © OpenStreetMap contributors")
-#     else:
-#         st.info("ℹ️ Ingrese los parámetros en el sidebar y haga clic en 'Analizar Ubicación'")
-
-# with tab2:
-#     # Contenido de la pestaña de vecinos factibles
-#     if st.session_state.get('analizado'):
-#         df_vecinos = generar_datos_vecinos(lat, lon, radio)
-#         df_factibles = df_vecinos[df_vecinos['Factible']]
-        
-#         st.success(f"Se encontraron {len(df_factibles)} ubicaciones factibles en un radio de {radio} km")
-        
-#         # Mostrar tabla
-#         st.dataframe(
-#             df_factibles.style.format({
-#                 'Latitud': '{:.4f}',
-#                 'Longitud': '{:.4f}',
-#                 'Radiacion_Wm2': '{:.1f}'
-#             }),
-#             height=300,
-#             use_container_width=True
-#         )
-        
-#         # Mostrar el mapa
-#         st.subheader("🌍 Mapa de Vecindario Solar")
-#         mapa_vecinos = crear_mapa_vecinos(lat, lon, df_vecinos, radio)
-        
-#         st_folium(
-#             fig=mapa_vecinos,
-#             width=1000,
-#             height=600,
-#             returned_objects=[]
-#         )
-        
-#         st.caption("Mapa base © Google Maps | © OpenStreetMap")
-#     else:
-#         st.info("ℹ️ Ingrese los parámetros en el sidebar y haga clic en 'Analizar Ubicación'")
-
-
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
@@ -272,6 +5,7 @@ import pandas as pd
 import numpy as np
 from geopy.distance import geodesic
 import datetime
+
 
 # Configuración de página (DEBE SER EL PRIMER COMANDO)
 st.set_page_config(
@@ -336,7 +70,7 @@ def calcular_condiciones_ambientales(lat, lon):
             'temperatura': 6.5,   # Muy frío
             'humedad': 92         # Muy húmedo
         }
-    """Calcula valores basados en posición geográfica con variaciones realistas"""
+    
     # Factores de variación basados en coordenadas
     factor_latitud = abs(lat) / 90  # 0 en ecuador, 1 en polos
     factor_longitud = (lon % 360) / 360  # Variación por longitud
@@ -476,9 +210,14 @@ def crear_mapa_principal(lat, lon, radio_km):
     return m
 
 def crear_mapa_vecinos(lat, lon, df_vecinos, radio_km):
-    """Crea mapa de vecinos con visualización mejorada"""
-    m = folium.Map(location=[lat, lon], zoom_start=13, control_scale=True)
+    """Crea mapa de vecinos con la misma configuración que el mapa principal"""
+    m = folium.Map(
+        location=[lat, lon], 
+        zoom_start=13,
+        control_scale=True
+    )
     
+    # Capas base idénticas a la primera pestaña
     folium.TileLayer(
         tiles='https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
         attr='Google Satellite',
@@ -486,39 +225,39 @@ def crear_mapa_vecinos(lat, lon, df_vecinos, radio_km):
         overlay=False
     ).add_to(m)
     
+    folium.TileLayer(
+        tiles='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attr='OpenStreetMap',
+        name='Mapa Callejero'
+    ).add_to(m)
+    
+    # Área de análisis (igual que en la primera pestaña)
     folium.Circle(
         location=[lat, lon],
         radius=radio_km*1000,
-        color='blue',
+        color='#4285F4',
         fill=True,
-        fill_opacity=0.1,
-        fill_color='blue',
-        popup=f'Área de búsqueda: {radio_km} km'
+        fill_color='#4285F4',
+        fill_opacity=0.2,
+        popup=f"Área de análisis: {radio_km} km"
     ).add_to(m)
     
+    # Punto central (mismo estilo)
     folium.Marker(
         [lat, lon],
         popup='Ubicación central',
         icon=folium.Icon(color='red', icon='home')
     ).add_to(m)
     
+    # Puntos factibles (ajustados para coincidir con el estilo)
     for _, row in df_vecinos[df_vecinos['Factible']].iterrows():
-        popup_content = f"""
-        <div style="width: 200px">
-            <h4 style="margin:0;padding:0">Punto Factible</h4>
-            <p style="margin:5px 0">
-                Radiación: {row['Radiacion_Wm2']:.1f} W/m²<br>
-                Temp: {row['Temperatura']:.1f}°C<br>
-                Humedad: {row['Humedad']:.1f}%
-            </p>
-        </div>
-        """
         folium.Marker(
             [row['Latitud'], row['Longitud']],
-            popup=folium.Popup(popup_content, max_width=300),
+            popup=f"Radiación: {row['Radiacion_Wm2']:.1f} W/m²",
             icon=folium.Icon(color='green', icon='solar-panel', prefix='fa')
         ).add_to(m)
     
+    # Puntos no factibles
     for _, row in df_vecinos[~df_vecinos['Factible']].iterrows():
         folium.CircleMarker(
             location=[row['Latitud'], row['Longitud']],
@@ -530,6 +269,11 @@ def crear_mapa_vecinos(lat, lon, df_vecinos, radio_km):
         ).add_to(m)
     
     folium.LayerControl(position='topright').add_to(m)
+    
+    # Asegurar dimensiones para despliegue
+    m.get_root().width = "100%"
+    m.get_root().height = "500px"
+    
     return m
 
 # Inicialización del estado de sesión
@@ -539,8 +283,8 @@ if 'analizado' not in st.session_state:
 # Sidebar con controles
 with st.sidebar:
     st.header("🔍 Parámetros de Análisis")
-    lat = st.number_input("Latitud", value=4.711, format="%.4f", step=0.001)
-    lon = st.number_input("Longitud", value=-74.072, format="%.4f", step=0.001)
+    lat = st.number_input("Latitud", value=12.288873, format="%.4f", step=0.001)
+    lon = st.number_input("Longitud", value=-71.842053, format="%.4f", step=0.001)
     radio = st.slider("Radio de análisis (km)", 0.1, 20.0, 5.0, 0.1)
     
     if st.button("Analizar Ubicación", type="primary", use_container_width=True):
@@ -638,7 +382,13 @@ with tab2:
         st.subheader("🗺️ Distribución Geográfica")
         with st.spinner("Generando mapa de vecinos..."):
             mapa_vecinos = crear_mapa_vecinos(lat, lon, df_vecinos, radio)
-            st_folium(mapa_vecinos, width=1200, height=600, returned_objects=[])
+            st_folium(
+                mapa_vecinos, 
+                width=1200, 
+                height=600,
+                returned_objects=[],
+                key="mapa_vecinos"  # Key único para este mapa
+            )
         
         st.download_button(
             label="📤 Exportar datos factibles",
